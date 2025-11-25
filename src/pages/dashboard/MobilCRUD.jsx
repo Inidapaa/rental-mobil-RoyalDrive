@@ -294,97 +294,99 @@ function MobilCRUD() {
       <div className="bg-dark-lighter rounded-xl border border-dark-light overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
-          <TableHeader>
-            <TableRow className="bg-dark-light hover:bg-dark-light">
-              <TableHead>ID</TableHead>
-              <TableHead>Foto</TableHead>
-              <TableHead>Nama Mobil</TableHead>
-              <TableHead>Merk</TableHead>
-              <TableHead>Tipe</TableHead>
-              <TableHead>Tahun</TableHead>
-              <TableHead>Harga/Hari</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Aksi</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredMobil.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={9}
-                  className="text-center py-8 text-[#a0a0a0]"
-                >
-                  {loading ? "Memuat data..." : "Tidak ada data mobil"}
-                </TableCell>
+            <TableHeader>
+              <TableRow className="bg-dark-light hover:bg-dark-light">
+                <TableHead>ID</TableHead>
+                <TableHead>Foto</TableHead>
+                <TableHead>Nama Mobil</TableHead>
+                <TableHead>Merk</TableHead>
+                <TableHead>Tipe</TableHead>
+                <TableHead>Tahun</TableHead>
+                <TableHead>Harga/Hari</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Aksi</TableHead>
               </TableRow>
-            ) : (
-              filteredMobil.map((mobil) => (
-                <TableRow key={mobil.id_mobil}>
-                  <TableCell className="text-sm">{mobil.id_mobil}</TableCell>
-                  <TableCell>
-                    {mobil.foto ? (
-                      <img
-                        src={mobil.foto}
-                        alt={mobil.nama_mobil}
-                        className="w-16 h-16 object-cover rounded-lg"
-                        onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/150";
-                        }}
-                      />
-                    ) : (
-                      <div className="w-16 h-16 bg-dark-light rounded-lg flex items-center justify-center">
-                        <ImageIcon className="w-8 h-8 text-[#666]" />
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm font-medium">
-                    {mobil.nama_mobil}
-                  </TableCell>
-                  <TableCell className="text-sm">{mobil.merk}</TableCell>
-                  <TableCell className="text-sm">{mobil.tipe}</TableCell>
-                  <TableCell className="text-sm">{mobil.tahun}</TableCell>
-                  <TableCell className="text-sm">
-                    {formatCurrency(mobil.harga_sewa_harian).replace(
-                      "Rp",
-                      "Rp "
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        mobil.status === "tersedia"
-                          ? "bg-green-500/20 text-green-500"
-                          : "bg-orange-500/20 text-orange-500"
-                      }`}
-                    >
-                      {mobil.status === "tersedia" ? "Tersedia" : "Disewa"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleEdit(mobil)}
-                        className="text-primary hover:text-primary-dark transition-colors p-2"
-                        title="Edit"
-                        disabled={loading}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(mobil.id_mobil, mobil.foto)}
-                        className="text-red-500 hover:text-red-600 transition-colors p-2"
-                        title="Hapus"
-                        disabled={loading}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+            </TableHeader>
+            <TableBody>
+              {filteredMobil.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={9}
+                    className="text-center py-8 text-[#a0a0a0]"
+                  >
+                    {loading ? "Memuat data..." : "Tidak ada data mobil"}
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                filteredMobil.map((mobil) => (
+                  <TableRow key={mobil.id_mobil}>
+                    <TableCell className="text-sm">{mobil.id_mobil}</TableCell>
+                    <TableCell>
+                      {mobil.foto ? (
+                        <img
+                          src={mobil.foto}
+                          alt={mobil.nama_mobil}
+                          className="w-16 h-16 object-cover rounded-lg"
+                          onError={(e) => {
+                            e.target.src = "https://via.placeholder.com/150";
+                          }}
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-dark-light rounded-lg flex items-center justify-center">
+                          <ImageIcon className="w-8 h-8 text-[#666]" />
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm font-medium">
+                      {mobil.nama_mobil}
+                    </TableCell>
+                    <TableCell className="text-sm">{mobil.merk}</TableCell>
+                    <TableCell className="text-sm">{mobil.tipe}</TableCell>
+                    <TableCell className="text-sm">{mobil.tahun}</TableCell>
+                    <TableCell className="text-sm">
+                      {formatCurrency(mobil.harga_sewa_harian).replace(
+                        "Rp",
+                        "Rp "
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          mobil.status === "tersedia"
+                            ? "bg-green-500/20 text-green-500"
+                            : "bg-orange-500/20 text-orange-500"
+                        }`}
+                      >
+                        {mobil.status === "tersedia" ? "Tersedia" : "Disewa"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleEdit(mobil)}
+                          className="text-primary hover:text-primary-dark transition-colors p-2"
+                          title="Edit"
+                          disabled={loading}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleDelete(mobil.id_mobil, mobil.foto)
+                          }
+                          className="text-red-500 hover:text-red-600 transition-colors p-2"
+                          title="Hapus"
+                          disabled={loading}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 
@@ -419,7 +421,6 @@ function MobilCRUD() {
                           <span className="font-semibold">
                             Klik untuk upload
                           </span>
-                          <span className="hidden sm:inline"> atau drag and drop</span>
                         </p>
                         <p className="text-xs text-[#666]">
                           PNG, JPG, GIF (MAX. 5MB)
@@ -545,7 +546,7 @@ function MobilCRUD() {
                     value={formData.kapasitas_mesin}
                     onChange={handleInputChange}
                     required
-                    placeholder="Contoh: 1.5L"
+                    placeholder="Contoh: 3200cc"
                     className="w-full bg-dark-light border border-dark-light rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base text-white placeholder-[#666] focus:outline-none focus:border-primary transition-colors"
                   />
                 </div>

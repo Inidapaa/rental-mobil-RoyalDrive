@@ -2,6 +2,34 @@ import { create } from "zustand";
 import { supabase } from "../lib/supabase";
 
 const projectRef = "zzcwgvulpnrgtkvcnijy";
+const USER_PROFILE_KEY = "rd-auth-profile";
+
+const saveUserProfile = (profile) => {
+  try {
+    localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(profile));
+  } catch (error) {
+    console.error("Error saving user profile cache:", error);
+  }
+};
+
+const loadUserProfile = () => {
+  try {
+    const raw = localStorage.getItem(USER_PROFILE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("Error loading user profile cache:", error);
+    return null;
+  }
+};
+
+const clearUserProfile = () => {
+  try {
+    localStorage.removeItem(USER_PROFILE_KEY);
+  } catch (error) {
+    console.error("Error clearing user profile cache:", error);
+  }
+};
 
 const getRoleFlags = (role) => ({
   isAdmin: role === "admin",
@@ -92,14 +120,20 @@ export const useAuthStore = create((set, get) => ({
   isAuthenticated: false,
   ...getRoleFlags(null),
   setLoading: (loading) => set({ loading }),
-  resetAuthState: () =>
+  resetAuthState: () => {
+    try {
+      clearUserProfile();
+    } catch {
+      // ignore
+    }
     set({
       user: null,
       userRole: null,
       username: null,
       isAuthenticated: false,
       ...getRoleFlags(null),
-    }),
+    });
+  },
   fetchUserData: async (authUser) => {
     if (!authUser?.email) {
       const role = "pelanggan";
@@ -136,21 +170,57 @@ export const useAuthStore = create((set, get) => ({
 
           const name = pelangganData?.nama || userData?.username || null;
           set({ userRole: role, username: name, ...getRoleFlags(role) });
+          saveUserProfile({ email: authUser.email, role, username: name });
           return { role, username: name };
         } else {
           const name = userData?.username || null;
           set({ userRole: role, username: name, ...getRoleFlags(role) });
+          saveUserProfile({ email: authUser.email, role, username: name });
           return { role, username: name };
         }
       }
 
-      const fallbackRole = authUser.user_metadata?.role || "pelanggan";
-      set({ userRole: fallbackRole, username: null, ...getRoleFlags(fallbackRole) });
-      return { role: fallbackRole, username: null };
+      const fallbackRole =
+        authUser.user_metadata?.role ||
+        loadUserProfile()?.role ||
+        "pelanggan";
+      const fallbackName =
+        loadUserProfile()?.email === authUser.email
+          ? loadUserProfile()?.username || null
+          : null;
+      set({
+        userRole: fallbackRole,
+        username: fallbackName,
+        ...getRoleFlags(fallbackRole),
+      });
+      if (fallbackName || fallbackRole !== "pelanggan") {
+        saveUserProfile({
+          email: authUser.email,
+          role: fallbackRole,
+          username: fallbackName,
+        });
+      }
+      return { role: fallbackRole, username: fallbackName };
     } catch (error) {
       console.error("Error in fetchUserData:", error);
+      const cachedProfile = loadUserProfile();
+      if (cachedProfile?.email === authUser?.email && cachedProfile?.role) {
+        set({
+          userRole: cachedProfile.role,
+          username: cachedProfile.username,
+          ...getRoleFlags(cachedProfile.role),
+        });
+        return {
+          role: cachedProfile.role,
+          username: cachedProfile.username,
+        };
+      }
       const fallbackRole = authUser.user_metadata?.role || "pelanggan";
-      set({ userRole: fallbackRole, username: null, ...getRoleFlags(fallbackRole) });
+      set({
+        userRole: fallbackRole,
+        username: null,
+        ...getRoleFlags(fallbackRole),
+      });
       return { role: fallbackRole, username: null };
     }
   },
@@ -170,7 +240,22 @@ export const useAuthStore = create((set, get) => ({
       }
 
       if (session?.user && session?.access_token) {
-        set({ user: session.user, isAuthenticated: true });
+        const cachedProfile = loadUserProfile();
+        if (
+          cachedProfile?.email &&
+          cachedProfile.email === session.user.email &&
+          cachedProfile.role
+        ) {
+          set({
+            user: session.user,
+            isAuthenticated: true,
+            userRole: cachedProfile.role,
+            username: cachedProfile.username,
+            ...getRoleFlags(cachedProfile.role),
+          });
+        } else {
+          set({ user: session.user, isAuthenticated: true });
+        }
         await get().fetchUserData(session.user);
       } else {
         get().resetAuthState();
@@ -208,11 +293,11 @@ export const useAuthStore = create((set, get) => ({
       }
 
       if (event === "TOKEN_REFRESHED" && session?.user) {
-        set((state) =>
-          state.user?.id === session.user.id
-            ? state
-            : { ...state, user: session.user, isAuthenticated: true }
-        );
+        set({ user: session.user, isAuthenticated: true });
+      }
+      if (event === "INITIAL_SESSION" && session?.user) {
+        set({ user: session.user, isAuthenticated: true, loading: false });
+        await get().fetchUserData(session.user);
       }
     });
 
@@ -286,6 +371,7 @@ export const useAuthStore = create((set, get) => ({
       clearSupabaseStorage(true);
       await new Promise((resolve) => setTimeout(resolve, 100));
       if (typeof window !== "undefined") {
+        clearUserProfile();
         const refreshUrl = window.location.origin + "/?logout=" + Date.now();
         window.location.href = refreshUrl;
       }

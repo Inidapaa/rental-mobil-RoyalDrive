@@ -20,9 +20,13 @@ function Register() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    const numericFields = ["no_identitas", "no_hp"];
+    const newValue = numericFields.includes(name)
+      ? value.replace(/\D/g, "")
+      : value;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: newValue,
     });
   };
 
@@ -151,6 +155,8 @@ function Register() {
                 value={formData.no_identitas}
                 onChange={handleChange}
                 required
+                inputMode="numeric"
+                pattern="[0-9]*"
                 className="w-full bg-dark-lighter border border-dark-light rounded-lg px-4 py-3 text-white placeholder-[#666] focus:outline-none focus:border-primary transition-colors"
                 placeholder="Masukkan nomor KTP"
               />
@@ -164,12 +170,14 @@ function Register() {
                 No. HP *
               </label>
               <input
-                type="tel"
+                type="text"
                 id="no_hp"
                 name="no_hp"
                 value={formData.no_hp}
                 onChange={handleChange}
                 required
+                inputMode="numeric"
+                pattern="[0-9]*"
                 className="w-full bg-dark-lighter border border-dark-light rounded-lg px-4 py-3 text-white placeholder-[#666] focus:outline-none focus:border-primary transition-colors"
                 placeholder="Masukkan nomor HP"
               />
