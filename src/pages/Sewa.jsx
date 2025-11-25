@@ -21,8 +21,7 @@ function Sewa() {
   const [noIdentitas, setNoIdentitas] = useState("");
   const [pelangganId, setPelangganId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [pelangganLoading, setPelangganLoading] = useState(true);
-  
+
   // Form data pelanggan untuk petugas
   const [formDataPelanggan, setFormDataPelanggan] = useState({
     nama: "",
@@ -61,13 +60,11 @@ function Sewa() {
   useEffect(() => {
     // Hanya fetch data pelanggan jika bukan petugas
     if (isPetugas) {
-      setPelangganLoading(false);
       return;
     }
 
     const fetchPelangganInfo = async () => {
       if (!user?.email) {
-        setPelangganLoading(false);
         return;
       }
       try {
@@ -82,8 +79,6 @@ function Sewa() {
         setPelangganId(data?.id_pelanggan || null);
       } catch (err) {
         console.error("Error fetching pelanggan info:", err);
-      } finally {
-        setPelangganLoading(false);
       }
     };
 
@@ -113,7 +108,9 @@ function Sewa() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
-      navigate("/login?redirect=" + encodeURIComponent(window.location.pathname));
+      navigate(
+        "/login?redirect=" + encodeURIComponent(window.location.pathname)
+      );
       return;
     }
     if (!tanggalSewa || !tanggalKembali) {
@@ -133,7 +130,12 @@ function Sewa() {
       // Jika petugas, handle data pelanggan manual
       if (isPetugas) {
         // Validasi form pelanggan
-        if (!formDataPelanggan.nama || !formDataPelanggan.no_identitas || !formDataPelanggan.no_hp || !formDataPelanggan.email) {
+        if (
+          !formDataPelanggan.nama ||
+          !formDataPelanggan.no_identitas ||
+          !formDataPelanggan.no_hp ||
+          !formDataPelanggan.email
+        ) {
           notify("Mohon lengkapi semua data pelanggan.", "warning");
           setSubmitting(false);
           return;
@@ -213,7 +215,7 @@ function Sewa() {
       // Buat transaksi - Default status: "menunggu" untuk pelanggan dan petugas
       // Value yang valid: menunggu, konfirmasi, berlangsung, selesai
       const statusValue = "menunggu"; // Default untuk pelanggan dan petugas
-      
+
       console.log("Final status value to insert:", statusValue);
 
       // Log data yang akan di-insert untuk debugging
@@ -225,10 +227,12 @@ function Sewa() {
         total_harga: totalHarga,
         status_transaksi: statusValue,
       };
-      
+
       console.log("Inserting transaksi with data:", transaksiData);
 
-      const { error: transaksiError } = await supabase.from("transaksi").insert(transaksiData);
+      const { error: transaksiError } = await supabase
+        .from("transaksi")
+        .insert(transaksiData);
 
       if (transaksiError) {
         // Log error detail untuk debugging
@@ -251,14 +255,17 @@ function Sewa() {
       navigate(isPetugas ? "/pesanan-petugas" : "/pesanan");
     } catch (err) {
       console.error("Error creating transaksi:", err);
-      
+
       // Handle check constraint error dengan pesan yang lebih jelas
       if (err.code === "23514") {
         notify(
           "Status transaksi tidak valid. Silakan coba lagi atau hubungi administrator.",
           "error"
         );
-        console.error("Check constraint violation - Status value:", STATUS.KONFIRMASI);
+        console.error(
+          "Check constraint violation - Status value:",
+          STATUS.KONFIRMASI
+        );
       } else {
         notify("Gagal membuat transaksi: " + err.message, "error");
       }
@@ -361,7 +368,10 @@ function Sewa() {
                     type="text"
                     value={formDataPelanggan.nama}
                     onChange={(e) =>
-                      setFormDataPelanggan({ ...formDataPelanggan, nama: e.target.value })
+                      setFormDataPelanggan({
+                        ...formDataPelanggan,
+                        nama: e.target.value,
+                      })
                     }
                     className="w-full bg-dark text-white border border-dark-light rounded-lg px-4 py-2 focus:outline-none focus:border-primary transition-colors"
                     required
@@ -376,7 +386,10 @@ function Sewa() {
                     type="text"
                     value={formDataPelanggan.no_identitas}
                     onChange={(e) =>
-                      setFormDataPelanggan({ ...formDataPelanggan, no_identitas: e.target.value })
+                      setFormDataPelanggan({
+                        ...formDataPelanggan,
+                        no_identitas: e.target.value,
+                      })
                     }
                     className="w-full bg-dark text-white border border-dark-light rounded-lg px-4 py-2 focus:outline-none focus:border-primary transition-colors"
                     required
@@ -391,7 +404,10 @@ function Sewa() {
                     type="tel"
                     value={formDataPelanggan.no_hp}
                     onChange={(e) =>
-                      setFormDataPelanggan({ ...formDataPelanggan, no_hp: e.target.value })
+                      setFormDataPelanggan({
+                        ...formDataPelanggan,
+                        no_hp: e.target.value,
+                      })
                     }
                     className="w-full bg-dark text-white border border-dark-light rounded-lg px-4 py-2 focus:outline-none focus:border-primary transition-colors"
                     required
@@ -406,7 +422,10 @@ function Sewa() {
                     type="email"
                     value={formDataPelanggan.email}
                     onChange={(e) =>
-                      setFormDataPelanggan({ ...formDataPelanggan, email: e.target.value })
+                      setFormDataPelanggan({
+                        ...formDataPelanggan,
+                        email: e.target.value,
+                      })
                     }
                     className="w-full bg-dark text-white border border-dark-light rounded-lg px-4 py-2 focus:outline-none focus:border-primary transition-colors"
                     required
@@ -442,7 +461,8 @@ function Sewa() {
                     className="w-full bg-dark text-white border border-dark-light rounded-lg px-4 py-2 opacity-70 cursor-not-allowed"
                   />
                   <p className="text-xs text-[#a0a0a0] mt-1">
-                    Nomor identitas diambil dari akun dan tidak dapat diubah di sini.
+                    Nomor identitas diambil dari akun dan tidak dapat diubah di
+                    sini.
                     {(!noIdentitas || !pelangganId) &&
                       " Lengkapi data di halaman Edit Profil sebelum memesan."}
                   </p>
@@ -478,14 +498,16 @@ function Sewa() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-white">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-white">
               <div className="bg-dark rounded-lg p-4 border border-dark-light">
                 <p className="text-sm text-[#a0a0a0]">Durasi</p>
-                <p className="text-2xl font-bold">{totalHari} Hari</p>
+                <p className="text-xl sm:text-2xl font-bold whitespace-nowrap">
+                  {totalHari} Hari
+                </p>
               </div>
               <div className="bg-dark rounded-lg p-4 border border-dark-light">
                 <p className="text-sm text-[#a0a0a0]">Total Harga</p>
-                <p className="text-2xl font-bold text-primary">
+                <p className="text-xl sm:text-2xl font-bold text-primary break-all sm:break-normal leading-tight">
                   {formatCurrency(totalHarga)}
                 </p>
               </div>
@@ -511,4 +533,3 @@ function Sewa() {
 }
 
 export default Sewa;
-

@@ -196,7 +196,7 @@ function Laporan() {
             {loading
               ? "..."
               : transaksiList.filter(
-                  (t) => t.status_transaksi === STATUS.KONFIRMASI
+                  (t) => t.status_transaksi === STATUS.MENUNGGU
                 ).length}
           </h3>
           <p className="text-xs sm:text-sm text-[#a0a0a0] uppercase tracking-wide">

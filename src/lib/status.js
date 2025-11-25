@@ -15,7 +15,7 @@ const ADMIN_LABELS = {
 };
 
 const CUSTOMER_LABELS = {
-  [STATUS.KONFIRMASI]: "Menunggu",
+  [STATUS.KONFIRMASI]: "Konfirmasi",
   [STATUS.MENUNGGU]: "Menunggu",
   [STATUS.BERLANGSUNG]: "Sedang Berlangsung",
   [STATUS.SELESAI]: "Selesai",
