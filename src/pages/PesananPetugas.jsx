@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Receipt, Calendar, Car, User as UserIcon, X } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/useAuth";
-import { useNotification } from "../components/NotificationProvider";
+import { useNotification } from "../contexts/NotificationContext";
 import { TRANSAKSI_UPDATED_EVENT } from "../lib/events";
 import {
   STATUS,
@@ -33,27 +33,23 @@ function PesananPetugas() {
   useEffect(() => {
     const userEmail = user?.email;
 
-    // Jika email berubah, reset flag
     if (currentEmail.current !== userEmail) {
       hasFetched.current = false;
       currentEmail.current = userEmail;
     }
 
-    // Jika user belum ada, set loading false
     if (!userEmail) {
       setLoading(false);
       return;
     }
 
-    // Fetch data hanya sekali per email
+    // Fetch data
     if (!hasFetched.current) {
       hasFetched.current = true;
-
       const fetchData = async () => {
         try {
           setLoading(true);
-
-          // Fetch semua transaksi (petugas bisa lihat semua)
+          // Fetch semua transaksi
           const { data: transaksi, error: transaksiError } = await supabase
             .from("transaksi")
             .select("*")
@@ -103,7 +99,6 @@ function PesananPetugas() {
     }
   }, [user?.email]);
 
-  // Listen to transaction updates
   useEffect(() => {
     const handleUpdate = () => {
       hasFetched.current = false;
@@ -126,7 +121,6 @@ function PesananPetugas() {
     }).format(amount);
   };
 
-  // Handle cancel pesanan
   const handleCancel = async (transaksi) => {
     if (
       !window.confirm("Batalkan pesanan ini? Tindakan tidak dapat dibatalkan.")

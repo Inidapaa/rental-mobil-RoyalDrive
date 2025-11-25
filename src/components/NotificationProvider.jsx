@@ -1,6 +1,5 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
-
-const NotificationContext = createContext(null);
+import { useCallback, useMemo, useState } from "react";
+import { NotificationContext } from "../contexts/NotificationContext";
 
 const typeStyles = {
   success: "border-green-500/40 bg-green-500/10 text-green-200",
@@ -57,12 +56,3 @@ export const NotificationProvider = ({ children }) => {
     </NotificationContext.Provider>
   );
 };
-
-export const useNotification = () => {
-  const context = useContext(NotificationContext);
-  if (!context) {
-    throw new Error("useNotification must be used within NotificationProvider");
-  }
-  return context.notify;
-};
-

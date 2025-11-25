@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/useAuth";
 import { supabase } from "../lib/supabase";
 import { User, Save, ArrowLeft } from "lucide-react";
-import { useNotification } from "../components/NotificationProvider";
+import { useNotification } from "../contexts/NotificationContext";
 
 function EditProfil() {
   const { user } = useAuth();
@@ -25,13 +25,11 @@ function EditProfil() {
   useEffect(() => {
     const userEmail = user?.email;
 
-    // Jika email berubah, reset flag
     if (currentEmail.current !== userEmail) {
       hasFetched.current = false;
       currentEmail.current = userEmail;
     }
 
-    // Jika user belum ada, set loading false dan set email kosong
     if (!userEmail) {
       setLoading(false);
       setFormData({
@@ -44,14 +42,14 @@ function EditProfil() {
       return;
     }
 
-    // Fetch data hanya sekali per email
+    // Fetch data
     if (!hasFetched.current) {
       hasFetched.current = true;
 
       const fetchPelangganData = async () => {
         try {
           setLoading(true);
-          // Cari data pelanggan berdasarkan email
+          //data pelanggan
           const { data, error } = await supabase
             .from("pelanggan")
             .select("*")
@@ -60,7 +58,6 @@ function EditProfil() {
 
           if (error && error.code !== "PGRST116") {
             console.error("Error fetching pelanggan:", error);
-            // Set email dari user meskipun ada error
             setFormData({
               nama: "",
               no_identitas: "",
@@ -82,7 +79,6 @@ function EditProfil() {
               email: data.email || userEmail || "",
             });
           } else {
-            // Jika belum ada data, set email dari user
             setFormData({
               nama: "",
               no_identitas: "",
@@ -93,7 +89,6 @@ function EditProfil() {
           }
         } catch (error) {
           console.error("Error:", error);
-          // Set email dari user meskipun ada error
           setFormData({
             nama: "",
             no_identitas: "",
@@ -108,7 +103,7 @@ function EditProfil() {
 
       fetchPelangganData();
     }
-  }, [user?.email]); // Hanya depend pada email, bukan seluruh user object
+  }, [user?.email]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -124,7 +119,6 @@ function EditProfil() {
 
     try {
       if (pelangganId) {
-        // Update data pelanggan
         const { error } = await supabase
           .from("pelanggan")
           .update({
@@ -138,7 +132,6 @@ function EditProfil() {
         if (error) throw error;
         notify("Profil berhasil diupdate!", "success");
       } else {
-        // Insert data pelanggan baru
         const { data, error } = await supabase
           .from("pelanggan")
           .insert([
@@ -156,7 +149,6 @@ function EditProfil() {
 
         if (error) throw error;
 
-        // Set pelangganId dari data yang baru diinsert
         if (data?.id_pelanggan) {
           setPelangganId(data.id_pelanggan);
         }

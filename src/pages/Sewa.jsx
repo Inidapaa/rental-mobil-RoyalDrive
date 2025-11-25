@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/useAuth";
 import { supabase } from "../lib/supabase";
-import { useNotification } from "../components/NotificationProvider";
+import { useNotification } from "../contexts/NotificationContext";
 import { TRANSAKSI_UPDATED_EVENT } from "../lib/events";
 import { STATUS } from "../lib/status";
 import { User } from "lucide-react";
@@ -22,7 +22,7 @@ function Sewa() {
   const [pelangganId, setPelangganId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form data pelanggan untuk petugas
+  // Form data pelanggan(petugas)
   const [formDataPelanggan, setFormDataPelanggan] = useState({
     nama: "",
     no_identitas: "",
@@ -58,7 +58,7 @@ function Sewa() {
   }, [id]);
 
   useEffect(() => {
-    // Hanya fetch data pelanggan jika bukan petugas
+    // fetch data pelanggan(public)
     if (isPetugas) {
       return;
     }
@@ -124,10 +124,8 @@ function Sewa() {
 
     try {
       setSubmitting(true);
-
       let finalPelangganId = pelangganId;
 
-      // Jika petugas, handle data pelanggan manual
       if (isPetugas) {
         // Validasi form pelanggan
         if (
@@ -141,7 +139,7 @@ function Sewa() {
           return;
         }
 
-        // Validasi email format
+        // Validasi format email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formDataPelanggan.email)) {
           notify("Format email tidak valid.", "warning");
@@ -161,7 +159,7 @@ function Sewa() {
         }
 
         if (existingPelanggan) {
-          // Update data pelanggan yang sudah ada
+          // Update data pelanggan
           finalPelangganId = existingPelanggan.id_pelanggan;
           const { error: updateError } = await supabase
             .from("pelanggan")
@@ -193,7 +191,6 @@ function Sewa() {
           finalPelangganId = newPelanggan.id_pelanggan;
         }
       } else {
-        // Untuk pelanggan biasa, validasi seperti sebelumnya
         if (!pelangganId) {
           notify(
             "Data pelanggan belum lengkap. Harap lengkapi profil sebelum memesan.",
@@ -211,14 +208,9 @@ function Sewa() {
           return;
         }
       }
-
-      // Buat transaksi - Default status: "menunggu" untuk pelanggan dan petugas
-      // Value yang valid: menunggu, konfirmasi, berlangsung, selesai
-      const statusValue = "menunggu"; // Default untuk pelanggan dan petugas
-
-      console.log("Final status value to insert:", statusValue);
-
-      // Log data yang akan di-insert untuk debugging
+      //default value untuk status transaksi
+      const statusValue = "menunggu";
+      // untuk debug
       const transaksiData = {
         id_mobil: mobil.id_mobil,
         id_pelanggan: finalPelangganId,
@@ -235,7 +227,6 @@ function Sewa() {
         .insert(transaksiData);
 
       if (transaksiError) {
-        // Log error detail untuk debugging
         console.error("Error creating transaksi:", {
           code: transaksiError.code,
           message: transaksiError.message,
@@ -255,8 +246,6 @@ function Sewa() {
       navigate(isPetugas ? "/pesanan-petugas" : "/pesanan");
     } catch (err) {
       console.error("Error creating transaksi:", err);
-
-      // Handle check constraint error dengan pesan yang lebih jelas
       if (err.code === "23514") {
         notify(
           "Status transaksi tidak valid. Silakan coba lagi atau hubungi administrator.",
@@ -350,7 +339,7 @@ function Sewa() {
               Detail Penyewaan
             </h2>
 
-            {/* Form untuk Petugas - Input Manual Data Pelanggan */}
+            {/* Form Petugas*/}
             {isPetugas ? (
               <>
                 <div className="flex items-center gap-3 mb-4 pb-4 border-b border-dark-light">
@@ -434,7 +423,7 @@ function Sewa() {
               </>
             ) : (
               <>
-                {/* Form untuk Pelanggan - Read Only */}
+                {/* Form Pelanggan*/}
                 <div>
                   <label className="block text-sm text-[#a0a0a0] mb-2">
                     Nama Lengkap

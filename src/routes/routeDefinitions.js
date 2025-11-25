@@ -1,6 +1,3 @@
-// Route path definitions - no JSX here, just configuration
-// JSX elements are created in router.jsx
-
 /**
  * Public routes - tidak memerlukan authentication
  */

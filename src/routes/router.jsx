@@ -25,11 +25,11 @@ import EditUser from "../pages/dashboard/EditUser";
 import Laporan from "../pages/dashboard/Laporan";
 import DashboardPetugas from "../pages/dashboard/DashboardPetugas";
 
-// Layouts
+// Layout
 import DashboardLayout from "../components/DashboardLayout";
 import PublicLayout from "../components/PublicLayout";
 
-// Component mapping
+// Mapping
 const components = {
   Landing,
   Catalog,
@@ -49,7 +49,7 @@ const components = {
   DashboardPetugas,
 };
 
-// Import route definitions
+// import route definitions
 import {
   publicRoutes,
   pelangganRoutes,
@@ -58,33 +58,34 @@ import {
 } from "./routeDefinitions";
 
 /**
- * Helper function to convert route definitions to React Router format
+ * convert route definitions ke format react router
  */
 function createRoutes(routeDefs) {
-  return routeDefs.map((route) => {
-    const Component = components[route.component];
-    if (!Component) {
-      console.error(`Component ${route.component} not found`);
-      return null;
-    }
+  return routeDefs
+    .map((route) => {
+      const Component = components[route.component];
+      if (!Component) {
+        console.error(`Component ${route.component} not found`);
+        return null;
+      }
 
-    const routeConfig = {
-      ...route,
-      element: <Component />,
-    };
+      const routeConfig = {
+        ...route,
+        element: <Component />,
+      };
 
-    // Remove component property and add loader if needed
-    delete routeConfig.component;
-    if (route.loader) {
-      routeConfig.loader = roleLoader(route.loader);
-    }
+      delete routeConfig.component;
+      if (route.loader) {
+        routeConfig.loader = roleLoader(route.loader);
+      }
 
-    return routeConfig;
-  }).filter(Boolean);
+      return routeConfig;
+    })
+    .filter(Boolean);
 }
 
 /**
- * Main router configuration
+ * Konfigurasi router utama
  */
 export const router = createBrowserRouter([
   {

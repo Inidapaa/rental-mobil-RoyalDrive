@@ -9,7 +9,7 @@ import {
 } from "../../components/ui/table";
 import { supabase } from "../../lib/supabase";
 import { getStatusColor, getStatusLabel } from "../../lib/status";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../contexts/NotificationContext";
 
 function TransaksiCRUD() {
   const [transaksiList, setTransaksiList] = useState([]);

@@ -23,7 +23,6 @@ function Navbar() {
   const navigate = useNavigate();
   const { isAuthenticated, userRole, user, username, signOut } = useAuth();
 
-  // Handle scroll
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -89,19 +88,17 @@ function Navbar() {
       e.preventDefault();
       e.stopPropagation();
     }
-    console.log("🔄 Logout button clicked in Navbar");
+    console.log("Logout button clicked in Navbar");
     setShowProfileMenu(false);
 
     try {
-      console.log("🔄 Calling signOut from Navbar...");
+      console.log("Calling signOut from Navbar...");
       await signOut();
       navigate("/", { replace: true });
     } catch (error) {
-      console.error("❌ Logout error in Navbar:", error);
-      // Jika signOut gagal, tetap force refresh dan clear storage
+      console.error("Logout error in Navbar:", error);
       setShowProfileMenu(false);
 
-      // Clear storage manual
       Object.keys(localStorage).forEach((key) => {
         if (
           key.startsWith("sb-") ||

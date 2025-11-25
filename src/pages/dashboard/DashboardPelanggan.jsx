@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Car, Calendar, Receipt } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/useAuth";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../contexts/NotificationContext";
 import { STATUS, getStatusColor, getStatusLabel } from "../../lib/status";
 import {
   Table,
@@ -28,7 +28,7 @@ function DashboardPelanggan() {
     try {
       setLoading(true);
 
-      // Fetch mobil tersedia
+      // Fetch mobil
       const { data: mobil, error: mobilError } = await supabase
         .from("mobil")
         .select("*")
@@ -37,9 +37,9 @@ function DashboardPelanggan() {
 
       if (mobilError) throw mobilError;
 
-      // Fetch transaksi pelanggan (jika ada user)
+      // Fetch transaksi
       if (user?.email) {
-        // Cari id_pelanggan berdasarkan email
+        // Cari id_pelanggan
         const { data: pelanggan } = await supabase
           .from("pelanggan")
           .select("id_pelanggan")
@@ -177,7 +177,8 @@ function DashboardPelanggan() {
                   {mobil.merk} - {mobil.tipe}
                 </p>
                 <p className="text-primary font-bold">
-                  {formatCurrency(mobil.harga_sewa_harian).replace("Rp", "Rp ")}/hari
+                  {formatCurrency(mobil.harga_sewa_harian).replace("Rp", "Rp ")}
+                  /hari
                 </p>
               </div>
             ))}
@@ -206,13 +207,18 @@ function DashboardPelanggan() {
           <TableBody>
             {transaksiList.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-[#a0a0a0]">
+                <TableCell
+                  colSpan={6}
+                  className="text-center py-8 text-[#a0a0a0]"
+                >
                   {loading ? "Memuat data..." : "Tidak ada riwayat pemesanan"}
                 </TableCell>
               </TableRow>
             ) : (
               transaksiList.map((transaksi) => {
-                const mobil = mobilList.find((m) => m.id_mobil === transaksi.id_mobil);
+                const mobil = mobilList.find(
+                  (m) => m.id_mobil === transaksi.id_mobil
+                );
                 return (
                   <TableRow key={transaksi.id_transaksi}>
                     <TableCell className="text-sm">
@@ -221,22 +227,27 @@ function DashboardPelanggan() {
                     <TableCell className="text-sm font-medium">
                       {mobil?.nama_mobil || "N/A"}
                     </TableCell>
-                    <TableCell className="text-sm">{transaksi.tanggal_sewa}</TableCell>
+                    <TableCell className="text-sm">
+                      {transaksi.tanggal_sewa}
+                    </TableCell>
                     <TableCell className="text-sm">
                       {transaksi.tanggal_kembali}
                     </TableCell>
                     <TableCell className="text-sm">
-                      {formatCurrency(transaksi.total_harga).replace("Rp", "Rp ")}
+                      {formatCurrency(transaksi.total_harga).replace(
+                        "Rp",
+                        "Rp "
+                      )}
                     </TableCell>
-                      <TableCell>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                            transaksi.status_transaksi
-                          )}`}
-                        >
-                          {getStatusLabel(transaksi.status_transaksi, "customer")}
-                        </span>
-                      </TableCell>
+                    <TableCell>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                          transaksi.status_transaksi
+                        )}`}
+                      >
+                        {getStatusLabel(transaksi.status_transaksi, "customer")}
+                      </span>
+                    </TableCell>
                   </TableRow>
                 );
               })
@@ -249,4 +260,3 @@ function DashboardPelanggan() {
 }
 
 export default DashboardPelanggan;
-

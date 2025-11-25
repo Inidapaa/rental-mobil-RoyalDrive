@@ -1,18 +1,7 @@
-/**
- * Helper function to check and normalize status value according to database constraint
- * This function tries to query existing valid status values from the database
- * and normalizes the input status to match the constraint
- */
-
 import { supabase } from "./supabase";
 
-/**
- * Get valid status values from database by querying existing transactions
- * This helps us understand what values are actually accepted by the constraint
- */
 export async function getValidStatusValues() {
   try {
-    // Query distinct status values from existing transactions
     const { data, error } = await supabase
       .from("transaksi")
       .select("status_transaksi")
@@ -23,7 +12,6 @@ export async function getValidStatusValues() {
       return null;
     }
 
-    // Get unique status values
     const uniqueStatuses = [...new Set(data.map((t) => t.status_transaksi))];
     return uniqueStatuses;
   } catch (err) {
@@ -32,29 +20,20 @@ export async function getValidStatusValues() {
   }
 }
 
-/**
- * Normalize status value to match database constraint
- * This function tries different variations to find the correct format
- */
 export function normalizeStatusValue(status) {
   if (!status) return null;
 
-  // Trim whitespace
   status = status.trim().toLowerCase();
 
-  // Map common variations to standard values
   const statusMap = {
-    // Lowercase variations
     konfirmasi: "konfirmasi",
     berlangsung: "berlangsung",
     selesai: "selesai",
     batal: "batal",
-    // Uppercase variations
     konfirmasi_upper: "Konfirmasi",
     berlangsung_upper: "Berlangsung",
     selesai_upper: "Selesai",
     batal_upper: "Batal",
-    // Alternative names
     pending: "konfirmasi",
     menunggu: "konfirmasi",
     diproses: "berlangsung",
@@ -62,18 +41,13 @@ export function normalizeStatusValue(status) {
     cancelled: "batal",
   };
 
-  // Try direct match first
   if (statusMap[status]) {
     return statusMap[status];
   }
 
-  // Return original if no mapping found
   return status;
 }
 
-/**
- * Validate status value against known valid values
- */
 export function isValidStatus(status) {
   const validStatuses = [
     "konfirmasi",
@@ -92,4 +66,3 @@ export function isValidStatus(status) {
 
   return validStatuses.includes(status);
 }
-

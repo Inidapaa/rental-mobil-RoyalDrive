@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/useAuth";
-import { useNotification } from "../components/NotificationProvider";
+import { useNotification } from "../contexts/NotificationContext";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -46,11 +46,8 @@ function Register() {
 
     try {
       setLoading(true);
-
       // Import supabase
       const { supabase } = await import("../lib/supabase");
-
-      // 1. Register user dengan role pelanggan (Auth + tabel user)
       const result = await signUp(
         formData.email,
         formData.password,
@@ -63,10 +60,7 @@ function Register() {
         return;
       }
 
-      console.log("✅ Auth user created, now inserting to pelanggan table...");
-
-      // 2. Simpan data pelanggan ke tabel pelanggan
-      const { data: pelangganData, error: pelangganError } = await supabase
+      const { error: pelangganError } = await supabase
         .from("pelanggan")
         .insert([
           {
@@ -81,16 +75,11 @@ function Register() {
         .select();
 
       if (pelangganError) {
-        console.error("❌ Error saving pelanggan:", pelangganError);
-        console.error("Error code:", pelangganError.code);
-        console.error("Error message:", pelangganError.message);
-        // Tetap lanjutkan meskipun error karena user sudah dibuat di auth dan tabel user
         notify(
           "Registrasi berhasil, tapi ada masalah menyimpan data pelanggan. Silakan login dan lengkapi profil Anda.",
           "warning"
         );
       } else {
-        console.log("✅ Pelanggan data inserted:", pelangganData);
         notify("Registrasi berhasil! Silakan login.", "success");
       }
 

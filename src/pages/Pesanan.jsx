@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Receipt, Calendar, Car, MapPin, Phone, Mail } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/useAuth";
-import { useNotification } from "../components/NotificationProvider";
+import { useNotification } from "../contexts/NotificationContext";
 import { TRANSAKSI_UPDATED_EVENT } from "../lib/events";
 import {
   STATUS,
@@ -27,28 +27,26 @@ function Pesanan() {
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState(null);
   const notify = useNotification();
-  const hasFetched = useRef(false); // Flag untuk mencegah multiple fetch
-  const currentEmail = useRef(null); // Track email yang sedang di-fetch
+  const hasFetched = useRef(false);
+  const currentEmail = useRef(null);
 
   useEffect(() => {
     const userEmail = user?.email;
-    
-    // Jika email berubah, reset flag
+
     if (currentEmail.current !== userEmail) {
       hasFetched.current = false;
       currentEmail.current = userEmail;
     }
 
-    // Jika user belum ada, set loading false
     if (!userEmail) {
       setLoading(false);
       return;
     }
 
-    // Fetch data hanya sekali per email
+    // Fetch data
     if (!hasFetched.current) {
       hasFetched.current = true;
-      
+
       const fetchData = async () => {
         try {
           setLoading(true);
@@ -62,7 +60,6 @@ function Pesanan() {
 
           if (pelangganError && pelangganError.code !== "PGRST116") {
             console.error("Error fetching pelanggan:", pelangganError);
-            // Tetap lanjutkan untuk fetch mobil dan transaksi
           }
 
           if (pelanggan) {
@@ -82,12 +79,11 @@ function Pesanan() {
               setTransaksiList(transaksi || []);
             }
           } else {
-            // Jika pelanggan tidak ditemukan, set empty list
             setTransaksiList([]);
             setPelangganData(null);
           }
 
-          // Fetch semua mobil untuk mendapatkan nama mobil
+          // Fetch semua mobil
           const { data: mobil, error: mobilError } = await supabase
             .from("mobil")
             .select("*");
@@ -100,7 +96,6 @@ function Pesanan() {
           }
         } catch (error) {
           console.error("Error fetching data:", error);
-          // Set empty arrays on error
           setTransaksiList([]);
           setMobilList([]);
           setPelangganData(null);
@@ -111,7 +106,7 @@ function Pesanan() {
 
       fetchData();
     }
-  }, [user?.email]); // Hanya depend pada email, bukan seluruh user object
+  }, [user?.email]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("id-ID", {
@@ -255,7 +250,8 @@ function Pesanan() {
                                 alt={mobil?.nama_mobil}
                                 className="w-12 h-12 object-cover rounded-lg"
                                 onError={(e) => {
-                                  e.target.src = "https://via.placeholder.com/48";
+                                  e.target.src =
+                                    "https://via.placeholder.com/48";
                                 }}
                               />
                             )}
@@ -282,7 +278,10 @@ function Pesanan() {
                           </div>
                         </TableCell>
                         <TableCell className="text-sm font-semibold">
-                          {formatCurrency(transaksi.total_harga).replace("Rp", "Rp ")}
+                          {formatCurrency(transaksi.total_harga).replace(
+                            "Rp",
+                            "Rp "
+                          )}
                         </TableCell>
                         <TableCell>
                           <span
@@ -290,7 +289,10 @@ function Pesanan() {
                               transaksi.status_transaksi
                             )}`}
                           >
-                            {getStatusLabel(transaksi.status_transaksi, "customer")}
+                            {getStatusLabel(
+                              transaksi.status_transaksi,
+                              "customer"
+                            )}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -321,4 +323,3 @@ function Pesanan() {
 }
 
 export default Pesanan;
-

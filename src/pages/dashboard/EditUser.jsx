@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import {
   Table,
@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { supabase } from "../../lib/supabase";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../contexts/NotificationContext";
 
 function EditUser() {
   const [users, setUsers] = useState([]);
@@ -24,19 +24,9 @@ function EditUser() {
   });
   const notify = useNotification();
 
-  useEffect(() => {
-    const loadUsers = async () => {
-      setLoading(true);
-      await fetchUsers();
-      setLoading(false);
-    };
-    loadUsers();
-  }, []);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
-      console.log("📥 Fetching petugas from database...");
-      // Fetch users dengan role petugas atau admin dari tabel 'user'
+      // Fetch users
       const { data, error } = await supabase
         .from("user")
         .select("*")
@@ -44,20 +34,26 @@ function EditUser() {
         .order("id", { ascending: false });
 
       if (error) {
-        console.error("❌ Error fetching users:", error);
         notify("Gagal memuat data petugas: " + error.message, "error");
         setUsers([]);
         return;
       }
 
-      console.log("✅ Petugas fetched successfully:", data?.length || 0, "users");
       setUsers(data || []);
     } catch (error) {
-      console.error("❌ Exception fetching users:", error);
       notify("Gagal memuat data petugas: " + error.message, "error");
       setUsers([]);
     }
-  };
+  }, [notify]);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      setLoading(true);
+      await fetchUsers();
+      setLoading(false);
+    };
+    loadUsers();
+  }, [fetchUsers]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -79,7 +75,7 @@ function EditUser() {
       setLoading(true);
 
       if (editingUser) {
-        // Update user - hanya update role jika menggunakan tabel user
+        // Update user
         const { error } = await supabase
           .from("user")
           .update({
@@ -90,22 +86,23 @@ function EditUser() {
         if (error) throw error;
         notify("User berhasil diupdate!", "success");
       } else {
-        // Simpan session admin yang sedang aktif sebelum signUp
-        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-        
+        // Simpan session admin
+        const {
+          data: { session: currentSession },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+
         if (sessionError || !currentSession) {
           throw new Error("Tidak ada session aktif. Silakan login ulang.");
         }
 
-        // Simpan informasi session admin untuk restore nanti
+        // Simpan informasi session admin
         const adminAccessToken = currentSession.access_token;
         const adminRefreshToken = currentSession.refresh_token;
         const adminUserEmail = currentSession.user.email;
 
-        console.log("📝 Creating new user:", formData.email);
-
-        // Create user baru dengan Supabase Auth
-        const { data: signUpData, error: authError } = await supabase.auth.signUp({
+        // Create user
+        const { error: authError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
@@ -116,14 +113,11 @@ function EditUser() {
         });
 
         if (authError) {
-          console.error("❌ Auth error:", authError);
           throw authError;
         }
 
-        console.log("✅ Auth user created:", signUpData.user?.id);
-
-        // Simpan ke tabel user
-        const { data: insertedData, error: userError } = await supabase
+        // Simpan user
+        const { error: userError } = await supabase
           .from("user")
           .insert([
             {
@@ -133,68 +127,56 @@ function EditUser() {
             },
           ])
           .select();
-
         if (userError) {
-          console.error("❌ Error saving to user table:", userError);
-          // Jika error karena user sudah ada, tetap lanjutkan
-          if (userError.code !== "23505") { // 23505 = unique_violation
-            throw new Error("Gagal menyimpan ke tabel user: " + userError.message);
+          if (userError.code !== "23505") {
+            throw new Error(
+              "Gagal menyimpan ke tabel user: " + userError.message
+            );
           } else {
-            console.log("⚠️ User already exists in table, continuing...");
+            console.log("User already exists in table, continuing...");
           }
         } else {
-          console.log("✅ User successfully inserted to table:", insertedData);
-        }
-
-        // Sign out untuk menghapus session user baru yang otomatis dibuat
-        console.log("🔓 Signing out from new user session...");
-        await supabase.auth.signOut();
-
-        // Tunggu sebentar untuk memastikan signOut selesai
-        await new Promise(resolve => setTimeout(resolve, 200));
-
-        // Kembalikan session admin yang sebelumnya menggunakan setSession
-        console.log("🔄 Restoring admin session...");
-        
-        try {
-          // Gunakan Promise.race dengan timeout untuk mencegah hang
-          const restorePromise = supabase.auth.setSession({
-            access_token: adminAccessToken,
-            refresh_token: adminRefreshToken,
-          });
-
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("Timeout: Session restore took too long")), 3000)
+          await supabase.auth.signOut();
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          try {
+            const restorePromise = supabase.auth.setSession({
+              access_token: adminAccessToken,
+              refresh_token: adminRefreshToken,
+            });
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(
+                () =>
+                  reject(new Error("Timeout: Session restore took too long")),
+                3000
+              )
+            );
+            const result = await Promise.race([restorePromise, timeoutPromise]);
+            if (result.error) {
+              throw result.error;
+            }
+            console.log("Session restored successfully");
+            const {
+              data: { session: verifySession },
+            } = await supabase.auth.getSession();
+            if (!verifySession || verifySession.user.email !== adminUserEmail) {
+              throw new Error("Session verification failed");
+            }
+            console.log("✅ Session verified, admin still logged in");
+          } catch (restoreErr) {
+            console.error("Error restoring session:", restoreErr);
+            setLoading(false);
+            notify("User berhasil dibuat! Memuat ulang halaman...", "success");
+            setTimeout(() => {
+              window.location.reload();
+            }, 800);
+            return;
+          }
+          console.log(" All done, user created and admin session restored");
+          notify(
+            "User berhasil dibuat! Data tersimpan di tabel user.",
+            "success"
           );
-
-          const result = await Promise.race([restorePromise, timeoutPromise]);
-          
-          if (result.error) {
-            throw result.error;
-          }
-
-          console.log("✅ Session restored successfully");
-          
-          // Verifikasi cepat tanpa timeout lagi
-          const { data: { session: verifySession } } = await supabase.auth.getSession();
-          if (!verifySession || verifySession.user.email !== adminUserEmail) {
-            throw new Error("Session verification failed");
-          }
-
-          console.log("✅ Session verified, admin still logged in");
-        } catch (restoreErr) {
-          console.error("❌ Error restoring session:", restoreErr);
-          // Jika gagal restore, reload halaman - user sudah dibuat
-          setLoading(false);
-          notify("User berhasil dibuat! Memuat ulang halaman...", "success");
-          setTimeout(() => {
-            window.location.reload();
-          }, 800);
-          return;
         }
-
-        console.log("✅ All done, user created and admin session restored");
-        notify("User berhasil dibuat! Data tersimpan di tabel user.", "success");
       }
 
       // Refresh daftar user setelah berhasil
@@ -202,10 +184,8 @@ function EditUser() {
       await fetchUsers();
       handleCloseModal();
     } catch (error) {
-      console.error("❌ Error saving user:", error);
       notify("Gagal menyimpan user: " + error.message, "error");
     } finally {
-      console.log("🏁 Setting loading to false");
       setLoading(false);
     }
   };
@@ -275,73 +255,71 @@ function EditUser() {
       <div className="bg-dark-lighter rounded-xl border border-dark-light overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
-          <TableHeader>
-            <TableRow className="bg-dark-light hover:bg-dark-light">
-              <TableHead>ID</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Tanggal Dibuat</TableHead>
-              <TableHead>Aksi</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center py-8 text-[#a0a0a0]"
-                >
-                  {loading
-                    ? "Memuat data..."
-                    : "Tidak ada data petugas."}
-                </TableCell>
+            <TableHeader>
+              <TableRow className="bg-dark-light hover:bg-dark-light">
+                <TableHead>ID</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Tanggal Dibuat</TableHead>
+                <TableHead>Aksi</TableHead>
               </TableRow>
-            ) : (
-              users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="text-sm">{user.id}</TableCell>
-                  <TableCell className="text-sm font-medium">
-                    {user.email}
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        user.role === "admin"
-                          ? "bg-primary/20 text-primary"
-                          : user.role === "petugas"
-                          ? "bg-blue-500/20 text-blue-500"
-                          : "bg-green-500/20 text-green-500"
-                      }`}
-                    >
-                      {user.role}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {user.created_at || "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className="text-primary hover:text-primary-dark transition-colors p-2"
-                        disabled={loading}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="text-red-500 hover:text-red-600 transition-colors p-2"
-                        disabled={loading}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+            </TableHeader>
+            <TableBody>
+              {users.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-8 text-[#a0a0a0]"
+                  >
+                    {loading ? "Memuat data..." : "Tidak ada data petugas."}
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell className="text-sm">{user.id}</TableCell>
+                    <TableCell className="text-sm font-medium">
+                      {user.email}
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          user.role === "admin"
+                            ? "bg-primary/20 text-primary"
+                            : user.role === "petugas"
+                            ? "bg-blue-500/20 text-blue-500"
+                            : "bg-green-500/20 text-green-500"
+                        }`}
+                      >
+                        {user.role}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {user.created_at || "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleEdit(user)}
+                          className="text-primary hover:text-primary-dark transition-colors p-2"
+                          disabled={loading}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user.id)}
+                          className="text-red-500 hover:text-red-600 transition-colors p-2"
+                          disabled={loading}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 

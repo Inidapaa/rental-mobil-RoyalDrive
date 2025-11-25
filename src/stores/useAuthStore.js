@@ -181,9 +181,7 @@ export const useAuthStore = create((set, get) => ({
       }
 
       const fallbackRole =
-        authUser.user_metadata?.role ||
-        loadUserProfile()?.role ||
-        "pelanggan";
+        authUser.user_metadata?.role || loadUserProfile()?.role || "pelanggan";
       const fallbackName =
         loadUserProfile()?.email === authUser.email
           ? loadUserProfile()?.username || null
@@ -378,4 +376,3 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 }));
-

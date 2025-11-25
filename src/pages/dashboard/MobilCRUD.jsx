@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { supabase } from "../../lib/supabase";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../contexts/NotificationContext";
 
 function MobilCRUD() {
   const [mobilList, setMobilList] = useState([]);
@@ -118,10 +118,10 @@ function MobilCRUD() {
 
       let fotoUrl = formData.foto;
 
-      // Upload gambar jika ada file baru
+      // Upload gambar
       if (imageFile) {
         if (editingMobil) {
-          // Hapus gambar lama jika ada
+          // Hapus gambar lama
           if (editingMobil.foto) {
             const oldFileName = editingMobil.foto.split("/").pop();
             await supabase.storage

@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Car, CheckCircle2, Receipt, Calendar } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { STATUS, getStatusColor, getStatusLabel } from "../../lib/status";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../contexts/NotificationContext";
 
 function DashboardHome() {
   const [stats, setStats] = useState({
@@ -20,11 +20,7 @@ function DashboardHome() {
   const [loading, setLoading] = useState(true);
   const notify = useNotification();
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -103,7 +99,11 @@ function DashboardHome() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [notify]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("id-ID", {

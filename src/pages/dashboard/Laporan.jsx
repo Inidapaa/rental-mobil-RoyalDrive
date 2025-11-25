@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { FileText } from "lucide-react";
 import { supabase } from "../../lib/supabase";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../contexts/NotificationContext";
 import { TRANSAKSI_UPDATED_EVENT } from "../../lib/events";
 import { STATUS, getStatusLabel } from "../../lib/status";
 import {
@@ -77,31 +77,29 @@ function Laporan() {
   };
 
   const statusOptions = useMemo(() => {
-    // Ambil nilai status yang BENAR-BENAR ada di database
+    // Ambil nilai status yang ada di database
     const dbStatuses = [
       ...new Set(transaksiList.map((t) => t.status_transaksi).filter(Boolean)),
     ];
     console.log("Status values from database:", dbStatuses);
 
-    // Buat options dari status yang ada di database
+    // Buat options
     const dbOptions = dbStatuses.map((status) => ({
-      value: status, // Gunakan nilai PERSIS dari database
+      value: status,
       label: getStatusLabel(status),
     }));
 
-    // Jika tidak ada status di database, gunakan fallback dengan nilai yang mungkin valid
+    // Jika tidak ada status di database, gunakan fallback
     if (dbOptions.length === 0) {
       console.warn("No status values found in database, using fallback");
-      // Coba nilai yang mungkin valid berdasarkan constraint
       return [
-        { value: "selesai", label: "Selesai" }, // Dari console log sebelumnya, "selesai" terlihat valid
+        { value: "selesai", label: "Selesai" },
         { value: "konfirmasi", label: "Konfirmasi" },
         { value: "berlangsung", label: "Berlangsung" },
       ];
     }
 
-    // Tambahkan opsi yang mungkin belum ada di database tapi valid
-    // Hanya tambahkan jika belum ada
+    // Tambahkan opsi yang belum ada di database
     const allValidStatuses = [
       { value: "menunggu", label: "Menunggu" },
       { value: "konfirmasi", label: "Konfirmasi" },
@@ -120,7 +118,6 @@ function Laporan() {
     try {
       setUpdatingStatusId(idTransaksi);
 
-      // Langsung gunakan nilai yang dipilih dari dropdown tanpa modifikasi
       const statusToUpdate = String(newStatus).trim();
 
       console.log("Updating status:", {
@@ -128,7 +125,7 @@ function Laporan() {
         statusValue: statusToUpdate,
       });
 
-      // Update langsung dengan nilai yang dipilih
+      // Update status
       const { error } = await supabase
         .from("transaksi")
         .update({ status_transaksi: statusToUpdate })
@@ -324,7 +321,6 @@ function Laporan() {
                         <select
                           value={transaksi.status_transaksi}
                           onChange={(e) => {
-                            // Gunakan nilai PERSIS dari option, jangan modifikasi
                             const selectedValue = e.target.value;
                             console.log(
                               "Selected status from dropdown:",
@@ -341,7 +337,7 @@ function Laporan() {
                           {statusOptions.map((option) => (
                             <option
                               key={option.value}
-                              value={option.value} // Nilai PERSIS dari database
+                              value={option.value}
                               disabled={option.disabled}
                             >
                               {option.label}

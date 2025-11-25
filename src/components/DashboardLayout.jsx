@@ -70,7 +70,6 @@ function DashboardLayout() {
     if (location.pathname !== path) {
       navigate(path);
     }
-    // Close mobile menu after navigation
     setMobileMenuOpen(false);
   };
 
@@ -80,7 +79,6 @@ function DashboardLayout() {
     } catch (error) {
       console.error("Error during logout:", error);
     } finally {
-      // Always navigate to landing page after logout
       window.location.href = "/";
     }
   };
@@ -132,7 +130,6 @@ function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-dark text-white flex">
-      {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -145,7 +142,6 @@ function DashboardLayout() {
         className={cn(
           "bg-dark-lighter border-r border-dark-light transition-all duration-300 fixed h-screen z-50",
           sidebarOpen ? "w-64" : "w-20",
-          // Mobile: hidden by default, shown when mobileMenuOpen is true
           "lg:translate-x-0",
           mobileMenuOpen
             ? "translate-x-0"
@@ -231,7 +227,6 @@ function DashboardLayout() {
       <div
         className={cn(
           "flex-1 transition-all duration-300 w-full",
-          // Desktop: add margin when sidebar is open
           "lg:ml-0",
           sidebarOpen ? "lg:ml-64" : "lg:ml-20"
         )}

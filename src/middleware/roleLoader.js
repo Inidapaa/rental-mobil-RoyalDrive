@@ -9,14 +9,12 @@ import { supabase } from "../lib/supabase";
 export function roleLoader(allowedRoles) {
   return async ({ request }) => {
     const { data } = await supabase.auth.getSession();
-    
-    // Jika tidak ada session, redirect ke login
     if (!data?.session) {
       const url = new URL(request.url);
       return redirect(`/login?redirect=${encodeURIComponent(url.pathname)}`);
     }
 
-    // Fetch role dari database
+    // Fetch role
     try {
       const { data: userData, error } = await supabase
         .from("user")
@@ -29,9 +27,9 @@ export function roleLoader(allowedRoles) {
         return redirect("/login");
       }
 
-      const userRole = userData?.role || data.session.user.user_metadata?.role || "pelanggan";
+      const userRole =
+        userData?.role || data.session.user.user_metadata?.role || "pelanggan";
 
-      // Jika role tidak diizinkan, redirect berdasarkan role
       if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
         if (userRole === "admin") {
           return redirect("/dashboard");
@@ -49,4 +47,3 @@ export function roleLoader(allowedRoles) {
     }
   };
 }
-

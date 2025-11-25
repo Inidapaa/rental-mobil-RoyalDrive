@@ -65,35 +65,30 @@ function Catalog() {
     return filteredCars.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredCars, currentPage]);
 
-  // Generate page numbers to display with ellipsis
+  // Total halaman
   const getPageNumbers = () => {
     const pages = [];
-    const maxVisible = 5; // Maximum visible page numbers
+    const maxVisible = 5;
 
     if (totalPages <= maxVisible) {
-      // Show all pages if total pages is less than maxVisible
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Always show first page
       pages.push(1);
 
       if (currentPage <= 3) {
-        // Show first 3 pages, ellipsis, last page
         for (let i = 2; i <= 3; i++) {
           pages.push(i);
         }
         pages.push("ellipsis");
         pages.push(totalPages);
       } else if (currentPage >= totalPages - 2) {
-        // Show first page, ellipsis, last 3 pages
         pages.push("ellipsis");
         for (let i = totalPages - 2; i <= totalPages; i++) {
           pages.push(i);
         }
       } else {
-        // Show first page, ellipsis, current-1, current, current+1, ellipsis, last page
         pages.push("ellipsis");
         for (let i = currentPage - 1; i <= currentPage + 1; i++) {
           pages.push(i);

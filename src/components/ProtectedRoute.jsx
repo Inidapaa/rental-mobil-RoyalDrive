@@ -4,19 +4,22 @@ import { useAuth } from "../contexts/useAuth";
 
 function ProtectedRoute({ children, allowedRoles = [] }) {
   const { isAuthenticated, userRole, loading } = useAuth();
-
-  // Timeout untuk loading - jika lebih dari 5 detik, anggap sudah selesai
   const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   useEffect(() => {
-    if (loading) {
-      const timer = setTimeout(() => {
-        setLoadingTimeout(true);
-      }, 5000);
-      return () => clearTimeout(timer);
-    } else {
-      setLoadingTimeout(false);
+    if (!loading) {
+      const resetId = setTimeout(() => setLoadingTimeout(false), 0);
+      return () => clearTimeout(resetId);
     }
+
+    const timer = setTimeout(() => {
+      setLoadingTimeout(true);
+    }, 5000);
+
+    return () => {
+      clearTimeout(timer);
+      setLoadingTimeout(false);
+    };
   }, [loading]);
 
   if (loading && !loadingTimeout) {
@@ -54,4 +57,3 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
 }
 
 export default ProtectedRoute;
-

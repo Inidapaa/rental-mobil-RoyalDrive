@@ -19,7 +19,7 @@ function About() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch jenis kendaraan (unique tipe from mobil)
+        // Fetch jenis kendaraan
         const { data: mobilData, error: mobilError } = await supabase
           .from("mobil")
           .select("tipe");
@@ -29,7 +29,7 @@ function About() {
         const uniqueTipe = new Set(mobilData?.map((m) => m.tipe) || []);
         const jenisKendaraan = uniqueTipe.size;
 
-        // Fetch total pengguna (from pelanggan table)
+        // Fetch total pengguna
         const { count: totalPengguna, error: pelangganError } = await supabase
           .from("pelanggan")
           .select("*", { count: "exact", head: true });

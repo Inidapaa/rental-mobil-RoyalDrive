@@ -1,6 +1,6 @@
 export const STATUS = {
-  MENUNGGU: "menunggu", // Default untuk pelanggan dan petugas
-  KONFIRMASI: "konfirmasi", // Untuk admin
+  MENUNGGU: "menunggu",
+  KONFIRMASI: "konfirmasi",
   BERLANGSUNG: "berlangsung",
   SELESAI: "selesai",
   BATAL: "batal",
@@ -53,6 +53,5 @@ export const getStatusOptions = (includeBatal = true) => {
   return base;
 };
 
-export const isCancelableStatus = (status) => 
+export const isCancelableStatus = (status) =>
   status === STATUS.KONFIRMASI || status === STATUS.MENUNGGU;
-

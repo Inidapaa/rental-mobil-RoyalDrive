@@ -42,7 +42,6 @@ function Login() {
         return;
       }
 
-      // State akan ter-update via AuthContext, useEffect akan handle redirect
       setLoading(false);
     } catch (err) {
       console.error("Login error:", err);

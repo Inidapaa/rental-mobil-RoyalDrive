@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Car, Receipt } from "lucide-react";
 import { supabase } from "../../lib/supabase";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../contexts/NotificationContext";
 import { STATUS, getStatusColor, getStatusLabel } from "../../lib/status";
 import {
   Table,
