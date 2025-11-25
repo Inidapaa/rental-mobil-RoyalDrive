@@ -219,7 +219,9 @@ function Catalog() {
                       <p className="text-sm uppercase text-primary font-semibold tracking-wide">
                         {car.merk}
                       </p>
-                      <h3 className="text-2xl font-bold">{car.nama_mobil}</h3>
+                      <h3 className="text-2xl font-bold truncate">
+                        {car.nama_mobil}
+                      </h3>
                       <p className="text-sm text-[#a0a0a0]">{car.tahun}</p>
                     </div>
                     <div className="flex items-baseline gap-2">
