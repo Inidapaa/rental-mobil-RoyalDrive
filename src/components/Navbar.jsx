@@ -384,7 +384,7 @@ function Navbar() {
             type="button"
             onClick={(e) => {
               handleLogout(e);
-              onNavigate();
+              onNavigate("/");
             }}
             className="w-full flex items-center justify-center gap-2 bg-dark-lighter border border-red-500/40 px-4 py-3 rounded-lg font-semibold text-red-300 uppercase tracking-wide"
           >
@@ -401,7 +401,7 @@ function Navbar() {
           reloadDocument
           to="/pesanan"
           onClick={onNavigate}
-          className="relative flex items-center gap-2 bg-dark-lighter border border-dark-light px-4 py-3 rounded-lg font-semibold uppercase tracking-wide"
+          className="relative w-full flex items-center justify-center gap-2 bg-dark-lighter border border-dark-light px-4 py-3 rounded-lg font-semibold uppercase tracking-wide"
         >
           <ShoppingBag className="w-5 h-5" />
           Pesanan
@@ -424,7 +424,7 @@ function Navbar() {
           type="button"
           onClick={(e) => {
             handleLogout(e);
-            onNavigate();
+            onNavigate("/");
           }}
           className="w-full flex items-center justify-center gap-2 bg-dark-lighter border border-red-500/40 px-4 py-3 rounded-lg font-semibold text-red-300 uppercase tracking-wide"
         >

@@ -218,10 +218,10 @@ function About() {
                     Email
                   </h3>
                   <a
-                    href="mailto:info@rent.com"
+                    href="mailto:royaldrive@help.com"
                     className="text-[#a0a0a0] hover:text-primary transition-colors"
                   >
-                    info@rent.com
+                    royaldrive@help.com
                   </a>
                 </div>
               </div>
