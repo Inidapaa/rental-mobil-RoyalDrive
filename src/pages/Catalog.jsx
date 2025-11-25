@@ -273,11 +273,11 @@ function Catalog() {
 
             {totalPages > 1 && (
               <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4 mt-6 sm:mt-8">
-                <p className="text-xs sm:text-sm text-[#a0a0a0] text-center md:text-left">
+                {/* <p className="text-xs sm:text-sm text-[#a0a0a0] text-center md:text-left">
                   Menampilkan {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
                   {Math.min(currentPage * ITEMS_PER_PAGE, filteredCars.length)}{" "}
                   dari {filteredCars.length} mobil
-                </p>
+                </p> */}
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-center">
                   <button
                     type="button"
