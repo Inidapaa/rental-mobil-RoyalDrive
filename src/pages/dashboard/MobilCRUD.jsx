@@ -40,7 +40,6 @@ function MobilCRUD() {
   const [searchTerm, setSearchTerm] = useState("");
   const notify = useNotification();
 
-  // Fetch data dari Supabase
   useEffect(() => {
     fetchMobil();
   }, []);

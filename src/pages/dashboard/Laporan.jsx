@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { FileText, Download, Printer } from "lucide-react";
+import { FileText } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { useNotification } from "../../components/NotificationProvider";
 import { TRANSAKSI_UPDATED_EVENT } from "../../lib/events";
-import { STATUS, getStatusLabel, getStatusOptions } from "../../lib/status";
+import { STATUS, getStatusLabel } from "../../lib/status";
 import {
   Table,
   TableBody,
@@ -76,59 +76,19 @@ function Laporan() {
       .reduce((sum, t) => sum + (t.total_harga || 0), 0);
   };
 
-  const handleExport = () => {
-    // Simple CSV export
-    const headers = [
-      "ID Transaksi",
-      "ID Mobil",
-      "ID Pelanggan",
-      "Tanggal Sewa",
-      "Tanggal Kembali",
-      "Total Harga",
-      "Status",
-    ];
-    const rows = transaksiList.map((t) => [
-      t.id_transaksi,
-      t.id_mobil,
-      t.id_pelanggan,
-      t.tanggal_sewa,
-      t.tanggal_kembali,
-      t.total_harga,
-      t.status_transaksi,
-    ]);
-
-    const csvContent =
-      headers.join(",") + "\n" + rows.map((row) => row.join(",")).join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `laporan-transaksi-${new Date().toISOString().split("T")[0]}.csv`
-    );
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
   const statusOptions = useMemo(() => {
     // Ambil nilai status yang BENAR-BENAR ada di database
-    const dbStatuses = [...new Set(transaksiList.map(t => t.status_transaksi).filter(Boolean))];
+    const dbStatuses = [
+      ...new Set(transaksiList.map((t) => t.status_transaksi).filter(Boolean)),
+    ];
     console.log("Status values from database:", dbStatuses);
-    
+
     // Buat options dari status yang ada di database
-    const dbOptions = dbStatuses.map(status => ({
+    const dbOptions = dbStatuses.map((status) => ({
       value: status, // Gunakan nilai PERSIS dari database
       label: getStatusLabel(status),
     }));
-    
+
     // Jika tidak ada status di database, gunakan fallback dengan nilai yang mungkin valid
     if (dbOptions.length === 0) {
       console.warn("No status values found in database, using fallback");
@@ -139,7 +99,7 @@ function Laporan() {
         { value: "berlangsung", label: "Berlangsung" },
       ];
     }
-    
+
     // Tambahkan opsi yang mungkin belum ada di database tapi valid
     // Hanya tambahkan jika belum ada
     const allValidStatuses = [
@@ -148,26 +108,26 @@ function Laporan() {
       { value: "berlangsung", label: "Berlangsung" },
       { value: "selesai", label: "Selesai" },
     ];
-    
-    const missingOptions = allValidStatuses.filter(opt => 
-      !dbOptions.some(dbOpt => dbOpt.value === opt.value)
+
+    const missingOptions = allValidStatuses.filter(
+      (opt) => !dbOptions.some((dbOpt) => dbOpt.value === opt.value)
     );
-    
+
     return [...dbOptions, ...missingOptions];
   }, [transaksiList]);
 
   const handleStatusUpdate = async (idTransaksi, newStatus) => {
     try {
       setUpdatingStatusId(idTransaksi);
-      
+
       // Langsung gunakan nilai yang dipilih dari dropdown tanpa modifikasi
       const statusToUpdate = String(newStatus).trim();
-      
-      console.log("Updating status:", { 
-        idTransaksi, 
-        statusValue: statusToUpdate
+
+      console.log("Updating status:", {
+        idTransaksi,
+        statusValue: statusToUpdate,
       });
-      
+
       // Update langsung dengan nilai yang dipilih
       const { error } = await supabase
         .from("transaksi")
@@ -194,7 +154,9 @@ function Laporan() {
         )
       );
       notify(
-        `Status pemesanan diperbarui menjadi ${getStatusLabel(statusToUpdate)}.`,
+        `Status pemesanan diperbarui menjadi ${getStatusLabel(
+          statusToUpdate
+        )}.`,
         "success"
       );
       window.dispatchEvent(new Event(TRANSAKSI_UPDATED_EVENT));
@@ -300,110 +262,99 @@ function Laporan() {
         <h3 className="text-lg sm:text-xl font-bold uppercase tracking-wide">
           Laporan Penyewaan Kendaraan
         </h3>
-        <div className="flex gap-2">
-          <button
-            onClick={handleExport}
-            className="flex items-center justify-center gap-2 bg-primary text-dark-lighter py-2 px-3 sm:px-4 rounded-lg font-semibold hover:bg-primary-dark transition-colors text-sm sm:text-base"
-          >
-            <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">Export CSV</span>
-            <span className="sm:hidden">Export</span>
-          </button>
-          <button
-            onClick={handlePrint}
-            className="flex items-center justify-center gap-2 bg-dark-light text-white py-2 px-3 sm:px-4 rounded-lg font-semibold hover:bg-dark-lighter transition-colors text-sm sm:text-base"
-          >
-            <Printer className="w-4 h-4" />
-            Cetak
-          </button>
-        </div>
       </div>
 
       {/* Table */}
       <div className="bg-dark-lighter rounded-xl border border-dark-light overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
-          <TableHeader>
-            <TableRow className="bg-dark-light hover:bg-dark-light">
-              <TableHead>ID</TableHead>
-              <TableHead>Mobil</TableHead>
-              <TableHead>Pelanggan</TableHead>
-              <TableHead>Tanggal Sewa</TableHead>
-              <TableHead>Tanggal Kembali</TableHead>
-              <TableHead>Total Harga</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {transaksiList.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-center py-8 text-[#a0a0a0]"
-                >
-                  {loading ? "Memuat data..." : "Tidak ada data transaksi"}
-                </TableCell>
+            <TableHeader>
+              <TableRow className="bg-dark-light hover:bg-dark-light">
+                <TableHead>ID</TableHead>
+                <TableHead>Mobil</TableHead>
+                <TableHead>Pelanggan</TableHead>
+                <TableHead>Tanggal Sewa</TableHead>
+                <TableHead>Tanggal Kembali</TableHead>
+                <TableHead>Total Harga</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
-            ) : (
-              transaksiList.map((transaksi) => {
-                const mobil = mobilList.find(
-                  (m) => m.id_mobil === transaksi.id_mobil
-                );
-                const pelanggan = pelangganList.find(
-                  (p) => p.id_pelanggan === transaksi.id_pelanggan
-                );
-                return (
-                  <TableRow key={transaksi.id_transaksi}>
-                    <TableCell className="text-sm">
-                      {transaksi.id_transaksi}
-                    </TableCell>
-                    <TableCell className="text-sm font-medium">
-                      {mobil?.nama_mobil || "N/A"}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {pelanggan?.nama || "N/A"}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {transaksi.tanggal_sewa}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {transaksi.tanggal_kembali}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {formatCurrency(transaksi.total_harga).replace(
-                        "Rp",
-                        "Rp "
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <select
-                        value={transaksi.status_transaksi}
-                        onChange={(e) => {
-                          // Gunakan nilai PERSIS dari option, jangan modifikasi
-                          const selectedValue = e.target.value;
-                          console.log("Selected status from dropdown:", selectedValue);
-                          handleStatusUpdate(transaksi.id_transaksi, selectedValue);
-                        }}
-                        className="bg-dark text-white border border-dark-light rounded-lg px-2 sm:px-3 py-1 text-xs sm:text-sm focus:outline-none focus:border-primary w-full sm:w-auto"
-                        disabled={updatingStatusId === transaksi.id_transaksi}
-                      >
-                        {statusOptions.map((option) => (
-                          <option
-                            key={option.value}
-                            value={option.value} // Nilai PERSIS dari database
-                            disabled={option.disabled}
-                          >
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {transaksiList.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-8 text-[#a0a0a0]"
+                  >
+                    {loading ? "Memuat data..." : "Tidak ada data transaksi"}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                transaksiList.map((transaksi) => {
+                  const mobil = mobilList.find(
+                    (m) => m.id_mobil === transaksi.id_mobil
+                  );
+                  const pelanggan = pelangganList.find(
+                    (p) => p.id_pelanggan === transaksi.id_pelanggan
+                  );
+                  return (
+                    <TableRow key={transaksi.id_transaksi}>
+                      <TableCell className="text-sm">
+                        {transaksi.id_transaksi}
+                      </TableCell>
+                      <TableCell className="text-sm font-medium">
+                        {mobil?.nama_mobil || "N/A"}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {pelanggan?.nama || "N/A"}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {transaksi.tanggal_sewa}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {transaksi.tanggal_kembali}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {formatCurrency(transaksi.total_harga).replace(
+                          "Rp",
+                          "Rp "
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <select
+                          value={transaksi.status_transaksi}
+                          onChange={(e) => {
+                            // Gunakan nilai PERSIS dari option, jangan modifikasi
+                            const selectedValue = e.target.value;
+                            console.log(
+                              "Selected status from dropdown:",
+                              selectedValue
+                            );
+                            handleStatusUpdate(
+                              transaksi.id_transaksi,
+                              selectedValue
+                            );
+                          }}
+                          className="bg-dark text-white border border-dark-light rounded-lg px-2 sm:px-3 py-1 text-xs sm:text-sm focus:outline-none focus:border-primary w-full sm:w-auto"
+                          disabled={updatingStatusId === transaksi.id_transaksi}
+                        >
+                          {statusOptions.map((option) => (
+                            <option
+                              key={option.value}
+                              value={option.value} // Nilai PERSIS dari database
+                              disabled={option.disabled}
+                            >
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>
