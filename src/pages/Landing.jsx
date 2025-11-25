@@ -74,8 +74,8 @@ function Landing() {
             </div>
 
             {/* Right Side - Description */}
-            <div className="flex items-end justify-end h-full lg:justify-end">
-              <p className="text-base sm:text-lg lg:text-xl text-end leading-[1.8] text-[#e0e0e0] m-0 max-w-[500px] uppercase">
+            <div className="flex items-end justify-start lg:justify-end h-full">
+              <p className="text-base sm:text-lg lg:text-xl text-start lg:text-end leading-[1.8] text-[#e0e0e0] m-0 max-w-[500px] uppercase">
                 Rasakan kemewahan berkendara tanpa batas. Kami menghadirkan
                 armada eksklusif, layanan respons cepat, dan pengalaman sewa
                 yang dirancang untuk kenyamanan serta kelas terbaik setiap
@@ -107,7 +107,7 @@ function Landing() {
             <Link
               reloadDocument
               to="/catalog"
-              className="bg-primary text-dark-lighter px-12 py-5 rounded-xl text-xl font-bold cursor-pointer transition-all duration-300 shadow-[0_4px_20px_rgba(163,230,53,0.3)] hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-[0_6px_30px_rgba(163,230,53,0.4)] inline-block hidden lg:inline-block"
+              className="bg-primary text-dark-lighter px-8 sm:px-12 py-4 sm:py-5 rounded-xl text-lg sm:text-xl font-bold cursor-pointer transition-all duration-300 shadow-[0_4px_20px_rgba(163,230,53,0.3)] hover:bg-primary-dark hover:-translate-y-0.5 hover:shadow-[0_6px_30px_rgba(163,230,53,0.4)] w-full lg:w-auto text-center"
             >
               CATALOG
             </Link>

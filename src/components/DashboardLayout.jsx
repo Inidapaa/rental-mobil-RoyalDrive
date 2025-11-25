@@ -77,12 +77,11 @@ function DashboardLayout() {
   const handleLogout = async () => {
     try {
       await signOut();
-      // Navigate to landing page after logout
-      navigate("/", { replace: true });
     } catch (error) {
       console.error("Error during logout:", error);
-      // Even if signOut fails, navigate to landing page
-      navigate("/", { replace: true });
+    } finally {
+      // Always navigate to landing page after logout
+      window.location.href = "/";
     }
   };
 
@@ -105,7 +104,7 @@ function DashboardLayout() {
             icon: Users,
           },
           {
-            title: "Edit User",
+            title: "Data Petugas",
             path: "/dashboard/user",
             icon: User,
           },
@@ -263,7 +262,7 @@ function DashboardLayout() {
                     ? "Kelola data pelanggan"
                     : location.pathname === "/dashboard/laporan"
                     ? "Laporan penyewaan kendaraan"
-                    : "Kelola data user"}
+                    : "Kelola data petugas"}
                 </p>
               </div>
             </div>

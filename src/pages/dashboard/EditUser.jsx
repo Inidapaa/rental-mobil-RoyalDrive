@@ -20,7 +20,7 @@ function EditUser() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "pelanggan",
+    role: "petugas",
   });
   const notify = useNotification();
 
@@ -35,25 +35,26 @@ function EditUser() {
 
   const fetchUsers = async () => {
     try {
-      console.log("📥 Fetching users from database...");
-      // Fetch users dari tabel 'user' di Supabase
+      console.log("📥 Fetching petugas from database...");
+      // Fetch users dengan role petugas atau admin dari tabel 'user'
       const { data, error } = await supabase
         .from("user")
         .select("*")
+        .in("role", ["petugas", "admin"])
         .order("id", { ascending: false });
 
       if (error) {
         console.error("❌ Error fetching users:", error);
-        notify("Gagal memuat data user: " + error.message, "error");
+        notify("Gagal memuat data petugas: " + error.message, "error");
         setUsers([]);
         return;
       }
 
-      console.log("✅ Users fetched successfully:", data?.length || 0, "users");
+      console.log("✅ Petugas fetched successfully:", data?.length || 0, "users");
       setUsers(data || []);
     } catch (error) {
       console.error("❌ Exception fetching users:", error);
-      notify("Gagal memuat data user: " + error.message, "error");
+      notify("Gagal memuat data petugas: " + error.message, "error");
       setUsers([]);
     }
   };
@@ -213,7 +214,7 @@ function EditUser() {
     setEditingUser(user);
     setFormData({
       email: user.email,
-      role: user.role || "pelanggan",
+      role: user.role || "petugas",
       password: "",
       confirmPassword: "",
     });
@@ -247,7 +248,7 @@ function EditUser() {
       email: "",
       password: "",
       confirmPassword: "",
-      role: "pelanggan",
+      role: "petugas",
     });
   };
 
@@ -255,14 +256,14 @@ function EditUser() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0">
         <h3 className="text-lg sm:text-xl font-bold uppercase tracking-wide">
-          Daftar User
+          Daftar Petugas
         </h3>
         <button
           onClick={() => setShowModal(true)}
           className="bg-primary text-dark-lighter px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-primary-dark transition-all duration-300 shadow-[0_4px_20px_rgba(163,230,53,0.3)] hover:shadow-[0_6px_30px_rgba(163,230,53,0.4)] flex items-center justify-center gap-2 text-sm sm:text-base"
         >
           <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="hidden sm:inline">Tambah User</span>
+          <span className="hidden sm:inline">Tambah Petugas</span>
           <span className="sm:hidden">Tambah</span>
         </button>
       </div>
@@ -292,7 +293,7 @@ function EditUser() {
                 >
                   {loading
                     ? "Memuat data..."
-                    : "Tidak ada data user. Pastikan tabel 'user' sudah dibuat di Supabase."}
+                    : "Tidak ada data petugas."}
                 </TableCell>
               </TableRow>
             ) : (
@@ -349,7 +350,7 @@ function EditUser() {
           <div className="bg-dark-lighter rounded-xl border border-dark-light w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-4 sm:p-6 border-b border-dark-light">
               <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-wide">
-                {editingUser ? "Edit User" : "Tambah User Baru"}
+                {editingUser ? "Edit Petugas" : "Tambah Petugas Baru"}
               </h3>
             </div>
             <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
@@ -381,7 +382,6 @@ function EditUser() {
                   >
                     <option value="admin">Admin</option>
                     <option value="petugas">Petugas</option>
-                    <option value="pelanggan">Pelanggan</option>
                   </select>
                 </div>
                 {!editingUser && (

@@ -474,18 +474,6 @@ function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {renderDesktopAuth()}
           </div>
-
-          <div className="md:hidden flex items-center gap-2">
-            {!isAuthenticated && (
-              <Link
-                reloadDocument
-                to="/login"
-                className="px-4 py-2 rounded-lg border border-dark-light text-sm font-semibold uppercase tracking-wide"
-              >
-                Masuk
-              </Link>
-            )}
-          </div>
         </div>
 
         {mobileMenuOpen && (
