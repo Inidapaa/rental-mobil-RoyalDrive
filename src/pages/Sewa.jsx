@@ -286,7 +286,7 @@ function Sewa() {
           onClick={() => navigate(-1)}
           className="text-[#a0a0a0] hover:text-primary transition-colors text-sm uppercase tracking-wide"
         >
-          ← Kembali ke katalog
+          ← Kembali ke catalog
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

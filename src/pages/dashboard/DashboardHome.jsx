@@ -63,13 +63,11 @@ function DashboardHome() {
 
       const totalPelanggan = pelangganData?.length || 0;
       const konfirmasiCount =
-        transaksiData?.filter(
-          (t) => t.status_transaksi === STATUS.KONFIRMASI
-        ).length || 0;
+        transaksiData?.filter((t) => t.status_transaksi === STATUS.MENUNGGU)
+          .length || 0;
       const berlangsungCount =
-        transaksiData?.filter(
-          (t) => t.status_transaksi === STATUS.BERLANGSUNG
-        ).length || 0;
+        transaksiData?.filter((t) => t.status_transaksi === STATUS.BERLANGSUNG)
+          .length || 0;
 
       setStats({
         totalMobil,
@@ -82,12 +80,10 @@ function DashboardHome() {
         berlangsungCount,
       });
 
-      // Mobil terbaru ditambahkan (5 terbaru)
       const recentMobilList =
         mobilData?.sort((a, b) => b.id_mobil - a.id_mobil).slice(0, 5) || [];
       setRecentMobil(recentMobilList);
 
-      // Transaksi terbaru (5 terbaru)
       const recentTransaksiList =
         transaksiData
           ?.sort((a, b) => b.id_transaksi - a.id_transaksi)
@@ -311,7 +307,9 @@ function DashboardHome() {
                       {index + 1}
                     </div>
                     <div>
-                      <p className="text-sm sm:text-base font-medium">{mobil.nama_mobil}</p>
+                      <p className="text-sm sm:text-base font-medium">
+                        {mobil.nama_mobil}
+                      </p>
                       <p className="text-xs sm:text-sm text-[#a0a0a0]">
                         {mobil.merk} - {mobil.tipe}
                       </p>
