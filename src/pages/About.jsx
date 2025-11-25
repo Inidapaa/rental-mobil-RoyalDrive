@@ -187,7 +187,7 @@ function About() {
                     Alamat
                   </h3>
                   <p className="text-[#a0a0a0]">
-                    Jl. Sudirman No. 123, Jakarta Pusat 10220
+                    Jl. Ijen No. 45, Klojen, Kota Malang 65111
                   </p>
                 </div>
               </div>

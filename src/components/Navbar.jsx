@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../contexts/useAuth";
 import {
@@ -20,6 +20,7 @@ function Navbar() {
   const [pendingPesanan, setPendingPesanan] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { isAuthenticated, userRole, user, username, signOut } = useAuth();
 
   // Handle scroll
@@ -93,9 +94,8 @@ function Navbar() {
 
     try {
       console.log("🔄 Calling signOut from Navbar...");
-      // signOut akan handle refresh halaman sendiri
       await signOut();
-      // Tidak perlu code di sini karena signOut sudah handle refresh
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("❌ Logout error in Navbar:", error);
       // Jika signOut gagal, tetap force refresh dan clear storage
