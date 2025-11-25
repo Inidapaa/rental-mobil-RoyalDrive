@@ -23,7 +23,7 @@ function Catalog() {
         const { data, error } = await supabase
           .from("mobil")
           .select("*")
-          .order("nama_mobil", { ascending: true });
+          .order("id_mobil", { ascending: false });
 
         if (error) throw error;
         setCars(data || []);
