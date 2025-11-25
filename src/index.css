@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --font-family-sans: "Poppins", system-ui, sans-serif;
+
+  --color-primary: #a3e635;
+  --color-primary-dark: #84cc16;
+
+  --color-dark: #0a0a0a;
+  --color-dark-lighter: #1a1a1a;
+  --color-dark-light: #252525;
+}
+
+@layer base {
+  body {
+    @apply bg-dark text-white font-sans antialiased;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+}
